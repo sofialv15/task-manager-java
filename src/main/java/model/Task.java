@@ -66,6 +66,19 @@ public class Task {
         this.dueDate = dueDate;
     }
 
+    public Task(String title, String description) {
+        this(
+                0,
+                title,
+                description,
+                false,
+                LocalDate.now(),
+                Priority.MEDIUM,
+                Category.OTHER,
+                null
+        );
+    }
+
 
     public int getId() {
         return id;

@@ -128,8 +128,7 @@ public class Menu {
 
     private  void completeTask() {
         System.out.println("Ingrese el ID de la tarea: ");
-        int id = scanner.nextInt();
-        Integer.parseInt(scanner.nextLine());
+        int id = Integer.parseInt(scanner.nextLine());
 
         boolean completed = taskService.completeTask(id);
 

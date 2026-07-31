@@ -3,60 +3,62 @@ package service;
 import  model.Task;
 import java.util.ArrayList;
 import java.util.List;
-import repository.FileTaskRepository;
+import repository.MySqlTaskRepository;
 
 public class TaskService {
 
     private List<Task> tasks;
-    private  int nextId;
-    private final FileTaskRepository fileManager = new FileTaskRepository();
+    private final MySqlTaskRepository repository = new MySqlTaskRepository();
 
     public TaskService(){
-        tasks = new ArrayList<>();
-        tasks = fileManager.loadTasks();
-        nextId = tasks.size() + 1;
-
+        tasks = repository.findAll();
     }
 
     public void addTask(String title, String description) {
-        Task task = new Task(nextId, title, description);
+        Task task = new Task(title, description);
 
-        tasks.add(task);
-        fileManager.saveTasks(tasks);
-        nextId++;
+        repository.save(task);
+        tasks = repository.findAll();
     }
 
     public List<Task> getAllTasks() {
-        return tasks;
+        return repository.findAll();
     }
 
     public boolean completeTask(int id) {
-        for (Task task : tasks) {
-            if (task.getId() == id) {
-                task.markAsCompleted();
-                fileManager.saveTasks(tasks);
+        Task task = repository.findById(id);
 
-                return true;
-            }
+        if (task == null) {
+            return false;
         }
-        return false;
+
+        task.markAsCompleted();
+
+        repository.update(task);
+
+        return true;
     }
 
     public boolean deleteTask(int id) {
-        boolean deleted = tasks.removeIf(task -> task.getId() == id);
+        Task task = repository.findById(id);
 
-        if (deleted) {
-            fileManager.saveTasks(tasks);
+        if (task == null) {
+            return false;
         }
 
-        return deleted;
+        repository.delete(id);
+
+        return true;
     }
 
     public List<Task> searchTasks(String text) {
         List<Task> results = new ArrayList<>();
-        String searchText = text.toLowerCase();
-        for (Task task : tasks) {
-            if (task.getTitle().toLowerCase().contains(searchText) || task.getDescription().toLowerCase().contains(searchText)) {
+
+        for (Task task : repository.findAll()) {
+
+            if (task.getTitle().toLowerCase().contains(text.toLowerCase())
+                    || task.getDescription().toLowerCase().contains(text.toLowerCase())) {
+
                 results.add(task);
             }
         }
@@ -64,15 +66,16 @@ public class TaskService {
     }
 
     public boolean editTask(int id, String newTitle, String newDescription) {
-        for (Task task : tasks) {
-            if (task.getId() == id) {
-                task.setTitle(newTitle);
-                task.setDescription(newDescription);
-                fileManager.saveTasks(tasks);
+        Task task = repository.findById(id);
 
-                return true;
-            }
+        if (task == null) {
+            return false;
         }
-        return false;
+
+        task.setTitle(newTitle);
+        task.setDescription(newDescription);
+        repository.update(task);
+
+        return true;
     }
 }
